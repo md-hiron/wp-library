@@ -67,6 +67,7 @@ class WP_Library {
         $this->load_dependencies();
         $this->set_locale();
         $this->library_rest_api();
+        $this->wp_library_admin();
     }
 
     /**
@@ -102,6 +103,11 @@ class WP_Library {
 		 */
 		require_once LIBRARY_URI . '/includes/class-wp-library-api.php';
 
+		/**
+		 * The class responsible for creating admin pages features
+		 */
+		require_once LIBRARY_URI . '/admin/class-wp-library-admin.php';
+
 
 		$this->loader = new WP_Library_Loader();
 
@@ -135,6 +141,22 @@ class WP_Library {
 
 		$this->loader->add_action( 'rest_api_init', $wp_library_api, 'register_rest_routes' );
 	
+	}
+
+	/**
+	 * Get admin page
+	 * 
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function wp_library_admin(){
+		$wp_library_admin = new WP_Library_Admin();
+		
+		//admin assets
+		$this->loader->add_action( 'admin_enqueue_scripts', $wp_library_admin, 'admin_assets' );
+		
+		// adimin page
+		$this->loader->add_action( 'admin_menu', $wp_library_admin, 'admin_page' );
 	}
 
     /**
