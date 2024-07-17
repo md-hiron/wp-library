@@ -17,6 +17,11 @@ class WP_Library_Admin {
     public function admin_assets(){
         wp_enqueue_style( 'wp-library-style', LIBRARY_URL . '/admin/build/index.css', array(), time() );
         wp_enqueue_script( 'wp-library-react-script', LIBRARY_URL . '/admin/build/index.js', array(), time(), true );
+
+        wp_localize_script('wp-library-react-script', 'wpApiSettings', [
+            'root' => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest')
+        ]);
     }
 
     public function admin_page(){

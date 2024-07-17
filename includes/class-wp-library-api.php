@@ -37,7 +37,7 @@ class WP_Library_API {
             'callback' => array( self::class, 'get_book' )
         ));
 
-        register_rest_route( 'library/v1', '/books', array(
+        register_rest_route( 'library/v1', '/create_book', array(
             'methods' => 'POST',
             'callback' => array( self::class, 'create_book' ),
             'permission_callback' => array( self::class, 'permission_check' )
@@ -58,44 +58,43 @@ class WP_Library_API {
     }
 
     public static function get_book( $data ){
-
         global $wpdb;
         $table_name = $wpdb->prefix . TABLE_NAME;
-        if( false === ( $book = get_transient( 'book' ) ) ){
-            $book = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE book_id = %d", $data['id'] ) );
-            set_transient( 'book', $book, 1 * DAY_IN_SECONDS );
-        }
+  
+        $book = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE book_id = %d", $data['id'] ) );
 
-        return rest_ensure_response( $data['id'] );
+        return rest_ensure_response( $book );
 
     }
 
-    public static function create_book( $data ){
+    public static function create_book( $request ){
         global $wpdb;
         $table_name = $wpdb->prefix . TABLE_NAME;
-
-        if (!is_array($data)) {
-            return new WP_Error('invalid_data', __('Invalid data provided', 'wp-library'), array('status' => 400));
-        }
+        $data = $request->get_params();
     
-
         $result = $wpdb->insert( $table_name, array(
             'title' => sanitize_text_field( $data['title'] ),
             'author' => sanitize_text_field( $data['author'] ),
             'publisher' => sanitize_text_field( $data['publisher'] ),
             'isbn' => sanitize_text_field( $data['isbn'] ),
-            'publication_date' => sanitize_text_field( $data['publication_date'] ),
+            'publication_date' =>  sanitize_text_field( $data['publish_date'] ),
         ) );
 
-        return $result ? new WP_REST_Response( $wpdb->insert_id, 201 ) : new WP_Error( 'cant_create', __( 'Can not create book', 'wp-library' ), array( 'status' => 500 ) ); 
+        if ($result) {
+            delete_transient('books');
+            return new WP_REST_Response($wpdb->insert_id, 201);
+        }
+
+        return new WP_Error('cant_create', __('Cannot create book', 'wp-library'), ['status' => 500]);
     }
 
     public static function permission_check( $request ){
-        if( !wp_verify_nonce( $request->get_headers('X-WP-Nonce'),'wp_rest' ) ){
-            return new WP_Error( 'rest_forbidden', esc_html__( 'Invalid Nonce', 'wp-library' ), array( 'status' => 403 ) );
+
+        if (!wp_verify_nonce($request->get_header('X-WP-Nonce'), 'wp_rest')) {
+            return new WP_Error('rest_forbidden', esc_html__('Invalid nonce', 'wp-library'), ['status' => 403]);
         }
 
-        return current_user_can( 'edits_posts' );
+        return current_user_can( 'edit_posts' );
     }
 
 }
