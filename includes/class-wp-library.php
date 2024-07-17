@@ -66,6 +66,7 @@ class WP_Library {
 
         $this->load_dependencies();
         $this->set_locale();
+        $this->library_rest_api();
     }
 
     /**
@@ -96,6 +97,11 @@ class WP_Library {
 		 */
 		require_once LIBRARY_URI . '/includes/class-wp-library-i18n.php';
 
+		/**
+		 * The class responsible for enabling all REST API to manage library system
+		 */
+		require_once LIBRARY_URI . '/includes/class-wp-library-api.php';
+
 
 		$this->loader = new WP_Library_Loader();
 
@@ -116,6 +122,19 @@ class WP_Library {
 
         $this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
+	}
+
+	/**
+	 * Get all REST API
+	 * 
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function library_rest_api() {
+		$wp_library_api = new WP_Library_API();
+
+		$this->loader->add_action( 'rest_api_init', $wp_library_api, 'register_rest_routes' );
+	
 	}
 
     /**

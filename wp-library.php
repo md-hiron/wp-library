@@ -40,6 +40,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 define( 'LIBRARY_VERSION', '1.0.0' );
+define( 'TABLE_NAME', 'library' );
 define( 'LIBRARY_URL', rtrim( plugin_dir_url( __FILE__ ), '/' ) );
 define( 'LIBRARY_URI', rtrim( plugin_dir_path( __FILE__ ), '/' ) );
 
@@ -80,5 +81,6 @@ function run_wp_library(){
 	$plugin = new WP_Library();
 	$plugin->run();
 }
+
 
 run_wp_library();
