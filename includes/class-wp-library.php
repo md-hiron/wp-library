@@ -63,11 +63,13 @@ class WP_Library {
             $this->version = '1.0.0';
         }
         $this->plugin_name = 'wp-library';
-
-        $this->load_dependencies();
-        $this->set_locale();
-        $this->library_rest_api();
+		
+        
+		$this->load_dependencies();
+		$this->library_rest_api();
+		$this->set_locale();
         $this->wp_library_admin();
+        
     }
 
     /**
@@ -97,7 +99,11 @@ class WP_Library {
 		 * of the plugin.
 		 */
 		require_once LIBRARY_URI . '/includes/class-wp-library-i18n.php';
-
+		
+		/**
+		 * The traits responsible for reusable component
+		 */
+		require_once LIBRARY_URI . '/includes/class-wp-library-traits.php';
 		/**
 		 * The class responsible for enabling all REST API to manage library system
 		 */
@@ -107,6 +113,8 @@ class WP_Library {
 		 * The class responsible for creating admin pages features
 		 */
 		require_once LIBRARY_URI . '/admin/class-wp-library-admin.php';
+
+		
 
 
 		$this->loader = new WP_Library_Loader();

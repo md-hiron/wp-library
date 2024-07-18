@@ -180,7 +180,7 @@ function App() {
 
 
   return (
-    <div className="wp-library-area py-20 max-w-[800px]">
+    <div className="wp-library-area py-20 max-w-[900px]">
       <div className="flex justify-end mb-4">
         <button className="py-2 px-4 bg-green-700 text-white" onClick={onClickAddNew}>Add New Book</button>
       </div>
