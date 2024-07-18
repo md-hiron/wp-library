@@ -36,11 +36,11 @@ trait WP_Library_CRUD {
         $limit = 10;
         $offset = ($page - 1) * $limit;
     
-        $query = "SELECT * FROM " . $table_name . " WHERE 1=1 ORDER BY book_id DESC";
+        $query = "SELECT * FROM " . $table_name . " WHERE 1=1";
         if ($search) {
             $query .= $wpdb->prepare(" AND (title LIKE %s OR author LIKE %s OR isbn LIKE %s)", $search, $search, $search);
         }
-        $query .= $wpdb->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+        $query .= $wpdb->prepare(" ORDER BY book_id DESC LIMIT %d OFFSET %d", $limit, $offset);
 
         // Build the query for counting total books
         $count_query = "SELECT COUNT(*) FROM " . $table_name . " WHERE 1=1";

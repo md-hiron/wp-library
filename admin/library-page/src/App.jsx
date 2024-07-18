@@ -208,11 +208,13 @@ function App() {
             ) ) }
           </tbody>
         </table>
-        <div className="books-pagination mt-8">
-          <button className="py-1 px-3 mr-2 bg-green-700 text-white" onClick={handlePrevClick} disabled={currentPage === 1 ? true : ''}>Prev</button>
-          <span>{currentPage} / {totalPage}</span>
-          <button className="py-1 px-3 ml-2 bg-green-700 text-white" onClick={handleNextClick} disabled={currentPage === totalPage ? true : ''}>Next</button>
-        </div>
+        { books.length > 0 && 
+          <div className="books-pagination mt-8">
+            <button className="py-1 px-3 mr-2 bg-green-700 text-white" onClick={handlePrevClick} disabled={currentPage === 1 ? true : ''}>Prev</button>
+            <span>{currentPage} / {totalPage}</span>
+            <button className="py-1 px-3 ml-2 bg-green-700 text-white" onClick={handleNextClick} disabled={currentPage === totalPage ? true : ''}>Next</button>
+          </div>
+        }
     </div>
   );
 }
