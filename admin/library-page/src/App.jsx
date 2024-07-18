@@ -15,17 +15,28 @@ function App() {
   });
   const [openForm, setOpenForm] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [bookId, setBookId] = useState(null);
+  const [totalPage, setTotalPage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(null);
 
   useEffect(() => {
     fetchBooks();
-  }, []);
+  }, [currentPage]);
 
-  const fetchBooks = async () => {
+  const fetchBooks = async ( isSearch = false ) => {
+    let param = `page=${currentPage}`;
+    if( isSearch ){
+      param += `&search=${searchTerm}`;
+    }
     try {
-      const response = await fetch(`${window.wpApiSettings.root}library/v1/books`);
+      const response = await fetch(`${window.wpApiSettings.root}library/v1/books?${param}`);
       const data = await response.json();
-      setBooks(data);
+      if( data ){
+        setBooks(data.books);
+        setTotalPage(data.total_pages)
+        setCurrentPage(data.current_page)
+      }
+      
     } catch (error) {
       new Error(error);
     }
@@ -141,6 +152,31 @@ function App() {
     }
   }
 
+  //next button
+  const handleNextClick = () => {
+    if( currentPage < totalPage ){
+      setCurrentPage( currentPage + 1 )
+    }
+  }
+
+  const handlePrevClick = () => {
+    if( currentPage > 1 ){
+      setCurrentPage( currentPage - 1 )
+    }
+  }
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    if( value.length > 0 ){
+      setSearchTerm(e.target.value);
+      fetchBooks(true);
+    }else{
+      setSearchTerm(null);
+      fetchBooks(false);
+    }
+    
+  }
+
 
 
   return (
@@ -149,16 +185,21 @@ function App() {
         <button className="py-2 px-4 bg-green-700 text-white" onClick={onClickAddNew}>Add New Book</button>
       </div>
       { openForm && <BookForm isUpdate={editing} handleFormBtn={onClickFormBtn} onHandleChange={onInputChange} formValue={form} /> }
+      <div className="search-form-area mt-10 mb-5">
+        <div className="search-form-field">
+          <input type="text" placeholder="Search by title, author, publisher or ISBN" onChange={handleSearchChange} />
+        </div>
+      </div>
       <table className="w-full">
           <thead>
             <tr>
-              <th>Book ID</th>
-              <th>Title</th>
-              <th>Author</th>
-              <th>Publisher</th>
-              <th>ISBN</th>
-              <th>Publication Date</th>
-              <th>Action</th>
+              <th className="p-3 bg-gray-300 text-left">Book ID</th>
+              <th className="p-3 bg-gray-300 text-left">Title</th>
+              <th className="p-3 bg-gray-300 text-left">Author</th>
+              <th className="p-3 bg-gray-300 text-left">Publisher</th>
+              <th className="p-3 bg-gray-300 text-left">ISBN</th>
+              <th className="p-3 bg-gray-300 text-left">Publication Date</th>
+              <th className="p-3 bg-gray-300 text-left" >Action</th>
             </tr>
           </thead>
           <tbody>
@@ -167,6 +208,11 @@ function App() {
             ) ) }
           </tbody>
         </table>
+        <div className="books-pagination mt-8">
+          <button className="py-1 px-3 mr-2 bg-green-700 text-white" onClick={handlePrevClick} disabled={currentPage === 1 ? true : ''}>Prev</button>
+          <span>{currentPage} / {totalPage}</span>
+          <button className="py-1 px-3 ml-2 bg-green-700 text-white" onClick={handleNextClick} disabled={currentPage === totalPage ? true : ''}>Next</button>
+        </div>
     </div>
   );
 }

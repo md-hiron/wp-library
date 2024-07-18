@@ -56,17 +56,41 @@ class WP_Library_API {
         ]);
     }
 
-    public static function get_books( ){
+    public static function get_books( $data ){
         global $wpdb;
         $table_name = $wpdb->prefix . TABLE_NAME;
 
-        // Get any existing copy of our transient data
-        if ( false === ( $books = get_transient( 'books' ) ) ) {
-            $books = $wpdb->get_results( "SELECT * FROM {$table_name}" );
-            set_transient( 'books', $books, 1 * DAY_IN_SECONDS );
+        $search = isset($data['search']) ? '%' . $wpdb->esc_like($data['search']) . '%' : '';
+        $page = isset($data['page']) ? intval($data['page']) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+    
+        $query = "SELECT * FROM " . $table_name . " WHERE 1=1";
+        if ($search) {
+            $query .= $wpdb->prepare(" AND (title LIKE %s OR author LIKE %s OR isbn LIKE %s)", $search, $search, $search);
+        }
+        $query .= $wpdb->prepare(" LIMIT %d OFFSET %d", $limit, $offset);
+
+        // Build the query for counting total books
+        $count_query = "SELECT COUNT(*) FROM " . $table_name . " WHERE 1=1";
+        if ($search) {
+            $count_query .= $wpdb->prepare(" AND (title LIKE %s OR author LIKE %s OR isbn LIKE %s)", $search, $search, $search);
         }
 
-        return rest_ensure_response( $books );
+        // Get the total number of matching records
+        $total_books = $wpdb->get_var($count_query);
+        $total_pages = ceil($total_books / $limit);
+        $books = $wpdb->get_results( $query );
+
+        $response = [
+            'books' => $books,
+            'total_books' => $total_books,
+            'total_pages' => $total_pages,
+            'current_page' => $page,
+            'per_page' => $limit
+        ];
+
+        return new WP_REST_Response($response, 200);
     }
 
     public static function get_book( $data ){
