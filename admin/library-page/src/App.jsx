@@ -43,28 +43,33 @@ function App() {
   const onClickAddNew = () => {
     setOpenForm(true);
     setEditing(false);
+    setEditing(false);
   }
 
   //on click create new 
-  const onClickFormBtn = () => {
-    console.log(form);
-    createBook().then( () => {
-      //empty form
-      setForm({
-        book_id: '',
-        title: '',
-        author: '',
-        publisher: '',
-        isbn: '',
-        publication_date: ''
-      });
+  const onClickFormBtn = async ( bookID ) => {
+    if( ! editing ){
+      await createBook();
+    }else{
+     await updateBook( bookID );
+    }
 
-      //fetch data
-      fetchBooks();
+    //empty form
+    setForm({
+      book_id: '',
+      title: '',
+      author: '',
+      publisher: '',
+      isbn: '',
+      publication_date: ''
+    });
 
-      //close form
-      setOpenForm(false);
-    } );
+    //fetch data
+    fetchBooks();
+
+    //close form
+    setOpenForm(false);
+    
     
   }
 
@@ -87,7 +92,7 @@ function App() {
   //on click update 
   const onUpdateClick = ( bookID ) => {
     fetchBook(bookID);
-    console.log(form);
+    setEditing(true);
     setOpenForm(true);
   }
 
@@ -104,25 +109,36 @@ function App() {
 
   const updateBook = async ( bookID ) => {
     try{
-      const response = await fetch(`${window.wpApiSettings.root}library/v1/book/${bookID}`, {
-        method: 'POST',
+      await fetch(`${window.wpApiSettings.root}library/v1/books/${bookID}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'X-WP-Nonce': window.wpApiSettings.nonce
         },
         body: JSON.stringify( form )
       });
-
-      const data = await response.json();
-      console.log(data);
       
     }catch(error){
       new Error(error);
     }
   }
 
-  const onDeleteClick = () => {
-    console.log('delete');
+  const onDeleteClick = async ( bookID ) => {
+    try{
+      await fetch(`${window.wpApiSettings.root}library/v1/books/${bookID}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': window.wpApiSettings.nonce
+        },
+      });
+
+      //fetch data
+      fetchBooks();
+      
+    }catch(error){
+      new Error(error);
+    }
   }
 
 
@@ -132,7 +148,7 @@ function App() {
       <div className="flex justify-end mb-4">
         <button className="py-2 px-4 bg-green-700 text-white" onClick={onClickAddNew}>Add New Book</button>
       </div>
-      { openForm && <BookForm isUpdate={false} handleFormBtn={onClickFormBtn} onHandleChange={onInputChange} formValue={form} /> }
+      { openForm && <BookForm isUpdate={editing} handleFormBtn={onClickFormBtn} onHandleChange={onInputChange} formValue={form} /> }
       <table className="w-full">
           <thead>
             <tr>

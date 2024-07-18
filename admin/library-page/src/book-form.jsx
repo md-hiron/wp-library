@@ -50,7 +50,7 @@ const BookForm = ({ isUpdate, handleFormBtn, onHandleChange, formValue }) => {
         </div>
         <div className="book-form-btn mt-4">
           <button
-            onClick={handleFormBtn}
+            onClick={() => handleFormBtn(formValue.book_id) }
             className="py-2 px-4 bg-green-700 text-white"
           >
             {isUpdate ? "Update" : "Create"}
